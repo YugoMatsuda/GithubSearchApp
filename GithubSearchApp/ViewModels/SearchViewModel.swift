@@ -9,7 +9,7 @@ class SearchViewModel: ObservableObject {
     private var userCurrentValueSubject = CurrentValueSubject<[User], Never>([])
     private var favoriteUsersCurrentValueSubject = CurrentValueSubject<[User], Never>([])
     private let networkService = NetworkService()
-    private let userDefaultsService = UserDefaultsService()
+    private let userDefaultsService = UserDefaultsService.liveValue
     private var cancellables = Set<AnyCancellable>()
     
     init() {
