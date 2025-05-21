@@ -5,7 +5,7 @@ class UserDetailViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let networkService = NetworkService()
+    private let networkService = NetworkService.liveValue
     
     func loadUserDetails(username: String) {
         isLoading = true
@@ -13,7 +13,7 @@ class UserDetailViewModel: ObservableObject {
         
         Task {
             do {
-                let details = try await networkService.getUserDetails(username: username)
+                let details = try await networkService.getUserDetails(username)
                 await MainActor.run {
                     self.userDetail = details
                     self.isLoading = false

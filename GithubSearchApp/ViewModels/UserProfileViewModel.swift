@@ -10,14 +10,14 @@ class UserProfileViewModel: ObservableObject {
     @Published var userErrorMessage: String?
     @Published var reposErrorMessage: String?
 
-    private let networkService = NetworkService()
+    private let networkService = NetworkService.liveValue
     
     func loadUserProfile(username: String) {
         isLoadingUser = true
         userErrorMessage = nil
         Task {
             do {
-                let details = try await networkService.getUserDetails(username: username)
+                let details = try await networkService.getUserDetails(username)
                 await MainActor.run {
                     self.userDetail = details
                     self.isLoadingUser = false
@@ -38,7 +38,7 @@ class UserProfileViewModel: ObservableObject {
         
         Task {
             do {
-                let repos = try await networkService.getUserRepositories(username: username)
+                let repos = try await networkService.getUserRepositories(username)
                 await MainActor.run {
                     self.repositories = repos
                     self.isLoadingRepos = false

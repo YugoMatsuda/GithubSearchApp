@@ -8,7 +8,7 @@ class SearchViewModel: ObservableObject {
     @Published var displayResult: DisplayResult = .initial
     private var userCurrentValueSubject = CurrentValueSubject<[User], Never>([])
     private var favoriteUsersCurrentValueSubject = CurrentValueSubject<[User], Never>([])
-    private let networkService = NetworkService()
+    private let networkService = NetworkService.liveValue
     private let userDefaultsService = UserDefaultsService.liveValue
     private var cancellables = Set<AnyCancellable>()
     
@@ -88,7 +88,7 @@ class SearchViewModel: ObservableObject {
         displayResult = .loading
         Task {
             do {
-                let users = try await networkService.searchUsers(query: query)
+                let users = try await networkService.searchUsers(query)
                 
                 await MainActor.run {
                     self.userCurrentValueSubject.value = users
