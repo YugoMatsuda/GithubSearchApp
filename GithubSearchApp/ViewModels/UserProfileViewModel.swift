@@ -1,7 +1,7 @@
 import Foundation
 import Combine
+import class UIKit.UIImage
 
-@MainActor
 class UserProfileViewModel: ObservableObject {
     @Published var userDetail: UserDetail?
     @Published var repositories: [Repository] = []
@@ -9,20 +9,29 @@ class UserProfileViewModel: ObservableObject {
     @Published var isLoadingRepos = false
     @Published var userErrorMessage: String?
     @Published var reposErrorMessage: String?
-    
+    @Published var avatarImage: UIImage?
+
     private let networkService = NetworkService()
     
-    func loadUserProfile(username: String) async {
+    func loadUserProfile(username: String) {
         isLoadingUser = true
         userErrorMessage = nil
-        do {
-            let details = try await networkService.getUserDetails(username: username)
-            self.userDetail = details
-            self.isLoadingUser = false
-        } catch {
-            self.handleUserError(error)
-            self.isLoadingUser = false
+        Task {
+            do {
+                let details = try await networkService.getUserDetails(username: username)
+                await MainActor.run {
+                    self.userDetail = details
+                    self.isLoadingUser = false
+                }
+                loadAvatar(for: details)
+            } catch {
+                await MainActor.run {
+                    self.handleUserError(error)
+                    self.isLoadingUser = false
+                }
+            }
         }
+
     }
     
     func loadUserRepositories(username: String) {
@@ -43,6 +52,23 @@ class UserProfileViewModel: ObservableObject {
                     self.reposErrorMessage = "Failed to load repositories"
                     self.isLoadingRepos = false
                 }
+            }
+        }
+    }
+    
+    private func loadAvatar(for details: UserDetail) {
+        guard let url = URL(string: details.avatarUrl) else { return }
+        
+        Task {
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                if let image = UIImage(data: data) {
+                    await MainActor.run {
+                        self.avatarImage = image
+                    }
+                }
+            } catch {
+                print("Failed to load avatar: \(error)")
             }
         }
     }

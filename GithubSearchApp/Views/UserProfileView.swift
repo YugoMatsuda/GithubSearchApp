@@ -3,7 +3,6 @@ import SwiftUI
 struct UserProfileView: View {
     let username: String
     @StateObject private var viewModel = UserProfileViewModel()
-    @State private var avatarImage: UIImage?
     
     var body: some View {
         ScrollView {
@@ -14,12 +13,10 @@ struct UserProfileView: View {
                         .padding()
                 } else if let errorMessage = viewModel.userErrorMessage {
                     ErrorView(message: errorMessage) {
-                        Task {
-                            await viewModel.loadUserProfile(username: username)
-                        }
+                        viewModel.loadUserProfile(username: username)
                     }
                 } else if let userDetail = viewModel.userDetail {
-                    if let avatarImage = avatarImage {
+                    if let avatarImage = viewModel.avatarImage {
                         Image(uiImage: avatarImage)
                             .resizable()
                             .frame(width: 200, height: 200)
@@ -107,31 +104,12 @@ struct UserProfileView: View {
             .padding()
         }
         .navigationTitle("Profile")
-        .task {
-            await viewModel.loadUserProfile(username: username)
+        .onAppear {
+            viewModel.loadUserProfile(username: username)
             viewModel.loadUserRepositories(username: username)
-            loadAvatar()
         }
     }
     
-    private func loadAvatar() {
-        
-        guard let userDetail = viewModel.userDetail,
-              let url = URL(string: userDetail.avatarUrl) else { return }
-        
-        Task {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                if let image = UIImage(data: data) {
-                    await MainActor.run {
-                        self.avatarImage = image
-                    }
-                }
-            } catch {
-                print("Failed to load avatar: \(error)")
-            }
-        }
-    }
 }
 
 struct StatView: View {
