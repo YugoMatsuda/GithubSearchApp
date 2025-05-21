@@ -32,13 +32,15 @@ struct UserRow: View {
                         .font(.caption)
                         .foregroundColor(.blue)
                 }
+                
+                Spacer()
             }
             .padding(.vertical, 8)
+            .contentShape(Rectangle())
             .onTapGesture {
-                userRowUIModel.didTapRow(userRowUIModel.id)
+                userRowUIModel.didTapRow()
             }
             
-            Spacer()
             
             Button(action: {
                 userRowUIModel.didTapFavoriteButton(userRowUIModel.id)
@@ -46,7 +48,9 @@ struct UserRow: View {
                 Image(systemName: userRowUIModel.isFavorite ? "star.fill" : "star")
                     .foregroundColor(userRowUIModel.isFavorite ? .yellow : .gray)
                     .font(.title2)
+                    .contentShape(Rectangle())
             }
+            .frame(width: 50, height: 50)
         }
         .onAppear {
             loadAvatar()
@@ -80,6 +84,6 @@ extension UserRow {
         let avatarUrl: String
         let isFavorite: Bool
         let didTapFavoriteButton: (Int) -> Void
-        let didTapRow: (Int) -> Void
+        let didTapRow: () -> Void
     }
 }

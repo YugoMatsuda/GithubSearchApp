@@ -28,9 +28,8 @@ class SearchViewModel: ObservableObject {
                 didTapFavoriteButton: { [weak self] id in
                     self?.saveFavoriteUser(userId: id)
                 },
-                didTapRow: { [weak self] id in
-                    guard let self = self, let user = users.first(where: { $0.id == id }) else { return }
-                    self.didTapUserRow(user)
+                didTapRow: { [weak self] in
+                    self?.didTapUserRow(user)
                 }
             )
         }
@@ -60,9 +59,8 @@ class SearchViewModel: ObservableObject {
                         didTapFavoriteButton: { [weak self] id in
                             self?.saveFavoriteUser(userId: id)
                         },
-                        didTapRow: { [weak self] id in
-                            guard let self = self, let user = users.first(where: { $0.id == id }) else { return }
-                            self.didTapUserRow(user)
+                        didTapRow: { [weak self] in
+                            self?.didTapUserRow(user)
                         }
                     )
                 }
