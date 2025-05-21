@@ -2,25 +2,40 @@ import SwiftUI
 
 struct UserRow: View {
     let userRowUIModel: UserRowUIModel
-    @State private var avatarImage: UIImage?
-    
+
     var body: some View {
         HStack {
             HStack(spacing: 12) {
                 // Avatar image
-                if let avatarImage = avatarImage {
-                    Image(uiImage: avatarImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 50, height: 50)
-                        .clipShape(Circle())
-                } else {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 50, height: 50)
-                        .overlay(
-                            ProgressView()
-                        )
+                AsyncImage(url: URL(string: userRowUIModel.avatarUrl)) { phase in
+                    switch phase {
+                    case .empty:
+                        Circle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                ProgressView()
+                            )
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .clipShape(Circle())
+                    case .failure(_):
+                        Image(systemName: "user")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .clipShape(Circle())
+                    @unknown default:
+                        Circle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                ProgressView()
+                            )
+                    }
                 }
                 
                 // User info
@@ -51,27 +66,6 @@ struct UserRow: View {
                     .contentShape(Rectangle())
             }
             .frame(width: 50, height: 50)
-        }
-        .onAppear {
-            loadAvatar()
-        }
-
-    }
-    
-    private func loadAvatar() {
-        guard avatarImage == nil, let url = URL(string: userRowUIModel.avatarUrl) else { return }
-        
-        Task {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                if let image = UIImage(data: data) {
-                    await MainActor.run {
-                        self.avatarImage = image
-                    }
-                }
-            } catch {
-                print("Failed to load avatar: \(error)")
-            }
         }
     }
 }

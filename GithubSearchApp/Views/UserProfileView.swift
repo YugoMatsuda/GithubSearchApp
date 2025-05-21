@@ -16,17 +16,31 @@ struct UserProfileView: View {
                         viewModel.loadUserProfile(username: username)
                     }
                 } else if let userDetail = viewModel.userDetail {
-                    if let avatarImage = viewModel.avatarImage {
-                        Image(uiImage: avatarImage)
-                            .resizable()
-                            .frame(width: 200, height: 200)
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    } else {
-                        Circle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 200, height: 200)
-                            .overlay(ProgressView())
+                    AsyncImage(url: URL(string: userDetail.avatarUrl)) { phase in
+                        switch phase {
+                        case .empty:
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 200, height: 200)
+                                .overlay(ProgressView())
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .frame(width: 200, height: 200)
+                                .clipShape(Circle())
+                                .shadow(radius: 5)
+                        case .failure(_):
+                            Image(systemName: "user")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 50, height: 50)
+                                .clipShape(Circle())
+                        @unknown default:
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 200, height: 200)
+                                .overlay(ProgressView())
+                        }
                     }
                     
                     VStack(spacing: 8) {

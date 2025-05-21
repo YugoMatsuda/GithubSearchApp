@@ -9,7 +9,6 @@ class UserProfileViewModel: ObservableObject {
     @Published var isLoadingRepos = false
     @Published var userErrorMessage: String?
     @Published var reposErrorMessage: String?
-    @Published var avatarImage: UIImage?
 
     private let networkService = NetworkService()
     
@@ -23,7 +22,6 @@ class UserProfileViewModel: ObservableObject {
                     self.userDetail = details
                     self.isLoadingUser = false
                 }
-                loadAvatar(for: details)
             } catch {
                 await MainActor.run {
                     self.handleUserError(error)
@@ -52,23 +50,6 @@ class UserProfileViewModel: ObservableObject {
                     self.reposErrorMessage = "Failed to load repositories"
                     self.isLoadingRepos = false
                 }
-            }
-        }
-    }
-    
-    private func loadAvatar(for details: UserDetail) {
-        guard let url = URL(string: details.avatarUrl) else { return }
-        
-        Task {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                if let image = UIImage(data: data) {
-                    await MainActor.run {
-                        self.avatarImage = image
-                    }
-                }
-            } catch {
-                print("Failed to load avatar: \(error)")
             }
         }
     }
