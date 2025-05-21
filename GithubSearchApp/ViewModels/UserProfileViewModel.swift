@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class UserProfileViewModel: ObservableObject {
     @Published var userDetail: UserDetail?
     @Published var repositories: [Repository] = []
@@ -11,23 +12,16 @@ class UserProfileViewModel: ObservableObject {
     
     private let networkService = NetworkService()
     
-    func loadUserProfile(username: String) {
+    func loadUserProfile(username: String) async {
         isLoadingUser = true
         userErrorMessage = nil
-        
-        Task {
-            do {
-                let details = try await networkService.getUserDetails(username: username)
-                await MainActor.run {
-                    self.userDetail = details
-                    self.isLoadingUser = false
-                }
-            } catch {
-                await MainActor.run {
-                    self.handleUserError(error)
-                    self.isLoadingUser = false
-                }
-            }
+        do {
+            let details = try await networkService.getUserDetails(username: username)
+            self.userDetail = details
+            self.isLoadingUser = false
+        } catch {
+            self.handleUserError(error)
+            self.isLoadingUser = false
         }
     }
     
