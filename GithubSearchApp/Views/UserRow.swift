@@ -71,13 +71,16 @@ struct UserRow: View {
 }
 
 extension UserRow {
-    struct UserRowUIModel: Identifiable {
-        let id: Int
-        let login: String
-        let htmlUrl: String
-        let avatarUrl: String
-        let isFavorite: Bool
-        let didTapFavoriteButton: (Int) -> Void
-        let didTapRow: () -> Void
+    struct UserRowUIModel: Identifiable, Equatable {
+        var id: Int
+        var login: String
+        var htmlUrl: String
+        var avatarUrl: String
+        var isFavorite: Bool
+        
+        @EquatableNoop
+        var didTapFavoriteButton: (Int) -> Void
+        @EquatableNoop
+        var didTapRow: () -> Void
     }
 }
