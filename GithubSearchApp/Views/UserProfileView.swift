@@ -7,15 +7,8 @@ struct UserProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .center, spacing: 16) {
-                // Profile Header
-                if viewModel.isLoadingUser {
-                    ProgressView("Loading profile...")
-                        .padding()
-                } else if let errorMessage = viewModel.userErrorMessage {
-                    ErrorView(message: errorMessage) {
-                        viewModel.loadUserProfile(username: username)
-                    }
-                } else if let userDetail = viewModel.userDetail {
+                switch viewModel.userProfileHeaderDisplayResult {
+                case .success(let userDetail):
                     AsyncImage(url: URL(string: userDetail.avatarUrl)) { phase in
                         switch phase {
                         case .empty:
@@ -72,6 +65,15 @@ struct UserProfileView: View {
                     .padding()
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(10)
+                case .failure(let errorMessage):
+                    ErrorView(message: errorMessage) {
+                        viewModel.loadUserProfile(username: username)
+                    }
+                case .loading:
+                    ProgressView("Loading profile...")
+                        .padding()
+                case .initial:
+                    EmptyView()
                 }
                 
                 // Repositories Section
@@ -81,15 +83,14 @@ struct UserProfileView: View {
                         .fontWeight(.bold)
                         .padding(.horizontal)
                         .padding(.top)
-                    
-                    if viewModel.isLoadingRepos {
-                        HStack {
-                            Spacer()
-                            ProgressView("Loading repositories...")
-                            Spacer()
+                    switch viewModel.userProfileRepositoriesDisplayResult {
+                    case .success(let repositories):
+                        ForEach(repositories) { repo in
+                            RepositoryRow(repository: repo)
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
                         }
-                        .padding()
-                    } else if let errorMessage = viewModel.reposErrorMessage {
+                    case .failure(let errorMessage):
                         VStack {
                             Text(errorMessage)
                                 .foregroundColor(.red)
@@ -102,28 +103,30 @@ struct UserProfileView: View {
                             .buttonStyle(.bordered)
                         }
                         .padding()
-                    } else if viewModel.repositories.isEmpty {
+                    case .loading:
+                        HStack {
+                            Spacer()
+                            ProgressView("Loading repositories...")
+                            Spacer()
+                        }
+                        .padding()
+                    case .empty:
                         Text("No repositories found")
                             .foregroundColor(.secondary)
                             .padding()
-                    } else {
-                        ForEach(viewModel.repositories) { repo in
-                            RepositoryRow(repository: repo)
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                        }
+                    case .initial:
+                        EmptyView()
                     }
                 }
+                .padding()
             }
-            .padding()
-        }
-        .navigationTitle("Profile")
-        .onAppear {
-            viewModel.loadUserProfile(username: username)
-            viewModel.loadUserRepositories(username: username)
+            .navigationTitle("Profile")
+            .onAppear {
+                viewModel.loadUserProfile(username: username)
+                viewModel.loadUserRepositories(username: username)
+            }
         }
     }
-    
 }
 
 struct StatView: View {
