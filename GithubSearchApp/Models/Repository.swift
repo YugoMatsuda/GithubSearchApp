@@ -17,3 +17,23 @@ struct Repository: Identifiable, Codable, Equatable {
         case updatedAt = "updated_at"
     }
 }
+
+extension Repository {
+    static func mock(
+        id: Int = 0,
+        name: String = "name",
+        description: String? = "description",
+        stargazersCount: Int = 0,
+        language: String? = "language",
+        updatedAt: String = ""
+    ) -> Repository {
+        Repository(
+            id: id,
+            name: name,
+            description: description,
+            stargazersCount: stargazersCount,
+            language: language,
+            updatedAt: updatedAt
+        )
+    }
+}
