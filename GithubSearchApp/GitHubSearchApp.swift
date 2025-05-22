@@ -7,8 +7,8 @@ struct GitHubSearchApp: App {
         WindowGroup {
             SearchView(store: Store(
                 initialState: Search.State.init(
-                    displayResult: .initial,
-                    favoriteUsers: UserDefaultsService.liveValue.getFavoriteUsers()),
+                    displayResult: .initial
+                ),
                 reducer: { Search() })
             )
         }

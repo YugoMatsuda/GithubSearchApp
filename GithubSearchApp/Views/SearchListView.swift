@@ -1,0 +1,88 @@
+import CasePaths
+import ComposableArchitecture
+import SwiftUI
+
+@Reducer
+struct SearchList {
+    @ObservableState
+    struct State: Equatable {
+        var items: IdentifiedArrayOf<UserRow.State>
+    }
+    
+    enum Action: BindableAction {
+        case view(ViewAction)
+        case binding(BindingAction<State>)
+        case items(IdentifiedActionOf<UserRow>)
+        case delegate(DelegateAction)
+
+        enum ViewAction: Equatable {
+        }
+        
+        enum DelegateAction: Equatable {
+            case didTapListRow(user: User)
+            case didTapFavoriteButton(user: User)
+        }
+    }
+    
+    @Dependency(\.userDefaultsService) var userDefaultsService
+        
+    var body: some Reducer<State, Action> {
+        BindingReducer()
+        Reduce { state, action in
+            switch action {
+            case .view:
+                return .none
+            case .binding:
+                return .none
+            case .delegate:
+                return .none
+            case .items(.element(_, .delegate(.didTapRow(id: let id)))):
+                guard let user = state.items[id: id]?.user else { return .none }
+                return .send(.delegate(.didTapListRow(user: user)))
+            case .items(.element(_, .delegate(.didTapFavoriteButton(id: let id)))):
+                guard let user = state.items[id: id]?.user else { return .none }
+                state.items[id: id]?.isFavorite.toggle()
+                return .send(.delegate(.didTapFavoriteButton(user: user)))
+            case .items:
+                return .none
+            }
+        }
+        .forEach(\.items, action: \.items) {
+            UserRow()
+        }
+    }
+}
+
+struct SearchListView: View {
+    @Bindable var store: StoreOf<SearchList>
+
+    var body: some View {
+        if store.items.isEmpty {
+            emptyView
+        } else {
+            List {
+                ForEach(
+                    store.scope(
+                        state: \.items,
+                        action: \.items
+                    ),
+                    content: UserRowView.init(store:)
+                )
+            }
+            .listStyle(PlainListStyle())
+        }
+    }
+    
+    private var emptyView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 60))
+                .foregroundColor(.gray)
+            
+            Text("No users found")
+                .font(.headline)
+                .foregroundColor(.gray)
+        }
+        .frame(maxHeight: .infinity)
+    }
+}

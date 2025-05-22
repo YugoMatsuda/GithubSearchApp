@@ -7,8 +7,6 @@ struct Search {
     @ObservableState
     struct State: Equatable {
         var displayResult: DisplayResult
-        var searchResultUsers: [User]? = nil
-        var favoriteUsers: [User]
         var path: [User] = []
         var mode: Mode = .search
         var searchText = ""
@@ -19,6 +17,7 @@ struct Search {
         case view(ViewAction)
         case binding(BindingAction<State>)
         case `internal`(InternalAction)
+        case searchBody(SearchBody.Action)
 
         @CasePathable
         enum ViewAction: Equatable {
@@ -43,17 +42,20 @@ struct Search {
             
     var body: some Reducer<State, Action> {
         BindingReducer()
+        Scope(state: \.displayResult, action: \.self) {
+            Scope(state: \.success, action: \.searchBody) {
+                SearchBody()
+            }
+        }
         Reduce { state, action in
             switch action {
             case .view(.didTapSeachClearButton):
                 state.searchText = ""
-                state.searchResultUsers = nil
                 state.displayResult = .initial
                 return .none
             case .binding(\.mode):
-                state.displayResult = makeDisplayResult(
-                    users:  state.searchResultUsers,
-                    favoriteUsers: state.favoriteUsers,
+                state.displayResult = makeDisplayResultFromMemoryCache(
+                    from: state.displayResult,
                     mode: state.mode
                 )
                 return .none
@@ -68,7 +70,6 @@ struct Search {
               )
             case .internal(.searchTextChangeDebounced):
                 guard !state.searchText.isEmpty else {
-                    state.searchResultUsers = nil
                     state.displayResult = .initial
                   return .none
                 }
@@ -84,93 +85,110 @@ struct Search {
                     )
                 }
             case .internal(.didReceiveSearchResult(.success(let users))):
-                state.searchResultUsers = users
                 state.displayResult = makeDisplayResult(
-                    users:  state.searchResultUsers ,
-                    favoriteUsers: state.favoriteUsers,
+                    users: users,
                     mode: state.mode
                 )
                 return .none
             case .internal(.didReceiveSearchResult(.failure(let error))):
                 state.displayResult = .failure("Error: \(error.localizedDescription)")
                 return .none
-            case .binding:
+            case .searchBody(.favoriteList(.delegate(.didTapListRow(let user)))),
+                 .searchBody(.searchList(.delegate(.didTapListRow(let user)))):
+                state.path.append(
+                    user
+                )
                 return .none
-            case .internal:
+            case .searchBody:
+                return .none
+            case .binding:
                 return .none
             }
         }
     }
     
-    private func makeDisplayResult(
-        users: [User]?,
-        favoriteUsers: [User],
+    private func makeDisplayResultFromMemoryCache(
+        from displayResult:  Search.State.DisplayResult,
         mode: Search.State.Mode
     ) -> Search.State.DisplayResult {
-        switch mode {
-        case .search:
-            guard let users = users else {
+        guard case .success(let state) = displayResult else {
+            switch mode {
+            case .search:
                 return .initial
-            }
-            if users.isEmpty {
-                return .empty
-            } else {
-                return .success(.searchResult(
-                    users.map { user in
-                        UserRow.UserRowUIModel(
-                            id: user.id,
-                            login: user.login,
-                            htmlUrl: user.htmlUrl,
-                            avatarUrl: user.avatarUrl,
-                            isFavorite: favoriteUsers.contains( where: { $0.id == user.id }),
-                            didTapFavoriteButton: { id in
-                                // TODO: Save favorite user after make component reducer
-                            },
-                            didTapRow: {
-                                // TODO: Handle user row tap after make component reducer
-                            }
-                        )
-                    })
+            case .favorites:
+                return makeDisplayResult(
+                    users: [],
+                    mode: mode
                 )
             }
-        case .favorites:
-            if favoriteUsers.isEmpty {
-                return .empty
-            } else {
-                return .success(.favoites(
-                    favoriteUsers.map { user in
-                        UserRow.UserRowUIModel(
-                            id: user.id,
-                            login: user.login,
-                            htmlUrl: user.htmlUrl,
-                            avatarUrl: user.avatarUrl,
-                            isFavorite: true,
-                            didTapFavoriteButton: { id in
-                                // TODO: Save favorite user after make component reducer
-                            },
-                            didTapRow: {
-                                // TODO: Handle user row tap after make component reducer
-                            }
-                        )
-                    }
-                ))
-            }
         }
+        let favoriteUsers = userDefaultsService.getFavoriteUsers()
+        
+        // Restore from search list 
+        return .success(
+            SearchBody.State.init(
+                mode: mode,
+                searchList: SearchList.State.init(
+                    items: .init(
+                        uniqueElements: state.searchList.items.map { user in
+                            UserRow.State.init(
+                                user: user.user,
+                                isFavorite: favoriteUsers.contains( where: { $0.id == user.user.id })
+                            )
+                        }
+                    )
+                ),
+                favoriteList: makeFavoriteListState(favoriteUsers)
+            )
+        )
     }
+    
+    private func makeDisplayResult(
+        users: [User],
+        mode: Search.State.Mode
+    ) -> Search.State.DisplayResult {
+        let favoriteUsers = userDefaultsService.getFavoriteUsers()
+        return .success(
+            SearchBody.State.init(
+                mode: mode,
+                searchList: SearchList.State.init(
+                    items: .init(
+                        uniqueElements: users.map { user in
+                            UserRow.State.init(
+                                user: user,
+                                isFavorite: favoriteUsers.contains( where: { $0.id == user.id })
+                            )
+                        }
+                    )
+                ),
+                favoriteList: makeFavoriteListState(favoriteUsers)
+            )
+        )
+    }
+    
+    private func makeFavoriteListState(_ favoriteUsers: [User]) -> FavoriteList.State {
+        FavoriteList.State.init(
+            items: .init(
+                uniqueElements: favoriteUsers.map { user in
+                    UserRow.State.init(
+                        user: user,
+                        isFavorite: true
+                    )
+                }
+            )
+        )
+    }
+        
 }
 
 extension Search.State {
+    @CasePathable
+    @dynamicMemberLookup
     enum DisplayResult: Equatable {
-        case success(SuccessBodyType)
+        case success(SearchBody.State)
         case failure(String)
         case loading
-        case empty
         case initial
-        
-        enum SuccessBodyType: Equatable {
-            case searchResult([UserRow.UserRowUIModel])
-            case favoites([UserRow.UserRowUIModel])
-        }
     }
     
     enum Mode: String, Identifiable, CaseIterable, Equatable {
@@ -212,10 +230,10 @@ struct SearchView: View {
                 }
                 
                 switch store.displayResult {
-                case .success(let successBodyType):
-                    successBodyView(successBodyType)
-                case .empty:
-                    emptyView
+                case .success:
+                    if let bodyStore = store.scope(state: \.displayResult.success, action: \.searchBody) {
+                        SearchBodyView(store: bodyStore)
+                    }
                 case .failure(let errorMessage):
                     failureView(errorMessage)
                 case .loading:
@@ -253,34 +271,6 @@ struct SearchView: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(10)
         .padding(.horizontal)
-    }
-    
-    private func successBodyView(_ successBodyType: Search.State.DisplayResult.SuccessBodyType) -> some View {
-        switch successBodyType {
-        case .favoites(let favoriteUsers):
-            List(favoriteUsers) { user in
-                UserRow(userRowUIModel: user)
-            }
-            .listStyle(PlainListStyle())
-        case .searchResult(let searchResults):
-            List(searchResults) { user in
-                UserRow(userRowUIModel: user)
-            }
-            .listStyle(PlainListStyle())
-        }
-    }
-    
-    private var emptyView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-            
-            Text("No users found")
-                .font(.headline)
-                .foregroundColor(.gray)
-        }
-        .frame(maxHeight: .infinity)
     }
     
     private func failureView(_ errorMessage: String) -> some View {
