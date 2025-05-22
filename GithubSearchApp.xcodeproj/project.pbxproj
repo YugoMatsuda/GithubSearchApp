@@ -10,11 +10,27 @@
 		658D63362DDE9083008F9557 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 658D63352DDE9083008F9557 /* ComposableArchitecture */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		658D67292DDEE83D008F9557 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 74267D9B2DDB6E9400DBD20F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 74267DA22DDB6E9400DBD20F;
+			remoteInfo = GithubSearchApp;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		658D67252DDEE83D008F9557 /* GithubSearchAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GithubSearchAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		74267DA32DDB6E9400DBD20F /* GithubSearchApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GithubSearchApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		658D67262DDEE83D008F9557 /* GithubSearchAppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = GithubSearchAppTests;
+			sourceTree = "<group>";
+		};
 		74267DA52DDB6E9400DBD20F /* GithubSearchApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = GithubSearchApp;
@@ -23,6 +39,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		658D67222DDEE83D008F9557 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		74267DA02DDB6E9400DBD20F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -38,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				74267DA52DDB6E9400DBD20F /* GithubSearchApp */,
+				658D67262DDEE83D008F9557 /* GithubSearchAppTests */,
 				74267DA42DDB6E9400DBD20F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				74267DA32DDB6E9400DBD20F /* GithubSearchApp.app */,
+				658D67252DDEE83D008F9557 /* GithubSearchAppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,6 +78,30 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		658D67242DDEE83D008F9557 /* GithubSearchAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 658D672B2DDEE83D008F9557 /* Build configuration list for PBXNativeTarget "GithubSearchAppTests" */;
+			buildPhases = (
+				658D67212DDEE83D008F9557 /* Sources */,
+				658D67222DDEE83D008F9557 /* Frameworks */,
+				658D67232DDEE83D008F9557 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				658D672A2DDEE83D008F9557 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				658D67262DDEE83D008F9557 /* GithubSearchAppTests */,
+				74267DA52DDB6E9400DBD20F /* GithubSearchApp */,
+			);
+			name = GithubSearchAppTests;
+			packageProductDependencies = (
+			);
+			productName = GithubSearchAppTests;
+			productReference = 658D67252DDEE83D008F9557 /* GithubSearchAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		74267DA22DDB6E9400DBD20F /* GithubSearchApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 74267DB12DDB6E9500DBD20F /* Build configuration list for PBXNativeTarget "GithubSearchApp" */;
@@ -83,9 +132,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1620;
+				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					658D67242DDEE83D008F9557 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 74267DA22DDB6E9400DBD20F;
+					};
 					74267DA22DDB6E9400DBD20F = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -109,11 +162,19 @@
 			projectRoot = "";
 			targets = (
 				74267DA22DDB6E9400DBD20F /* GithubSearchApp */,
+				658D67242DDEE83D008F9557 /* GithubSearchAppTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		658D67232DDEE83D008F9557 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		74267DA12DDB6E9400DBD20F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,6 +185,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		658D67212DDEE83D008F9557 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		74267D9F2DDB6E9400DBD20F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -133,7 +201,53 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		658D672A2DDEE83D008F9557 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 74267DA22DDB6E9400DBD20F /* GithubSearchApp */;
+			targetProxy = 658D67292DDEE83D008F9557 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		658D672C2DDEE83D008F9557 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J4Z3PK4YF6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = UGO.GithubSearchAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GithubSearchApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GithubSearchApp";
+			};
+			name = Debug;
+		};
+		658D672D2DDEE83D008F9557 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J4Z3PK4YF6;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = UGO.GithubSearchAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GithubSearchApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GithubSearchApp";
+			};
+			name = Release;
+		};
 		74267DAF2DDB6E9500DBD20F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -316,6 +430,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		658D672B2DDEE83D008F9557 /* Build configuration list for PBXNativeTarget "GithubSearchAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				658D672C2DDEE83D008F9557 /* Debug */,
+				658D672D2DDEE83D008F9557 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		74267D9E2DDB6E9400DBD20F /* Build configuration list for PBXProject "GithubSearchApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

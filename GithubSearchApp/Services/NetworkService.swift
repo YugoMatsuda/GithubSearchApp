@@ -102,3 +102,17 @@ extension NetworkService: DependencyKey {
         }
     )
 }
+
+extension NetworkService: TestDependencyKey {
+    static let testValue = Self(
+        searchUsers: { _ in
+            [.mock()]
+        },
+        getUserDetails: { _ in
+            .mock()
+        },
+        getUserRepositories: { _ in
+            []
+        }
+    )
+}
