@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		658D63362DDE9083008F9557 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 658D63352DDE9083008F9557 /* ComposableArchitecture */; };
+		658D67432DDEF164008F9557 /* Testing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 658D67422DDEF164008F9557 /* Testing.framework */; platformFilter = ios; };
+		658D67442DDEF164008F9557 /* Testing.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 658D67422DDEF164008F9557 /* Testing.framework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,8 +22,23 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		658D67452DDEF164008F9557 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				658D67442DDEF164008F9557 /* Testing.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		658D67252DDEE83D008F9557 /* GithubSearchAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GithubSearchAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		658D67422DDEF164008F9557 /* Testing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Testing.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/Testing.framework; sourceTree = DEVELOPER_DIR; };
 		74267DA32DDB6E9400DBD20F /* GithubSearchApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GithubSearchApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -43,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				658D67432DDEF164008F9557 /* Testing.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,11 +75,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		658D67412DDEF163008F9557 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				658D67422DDEF164008F9557 /* Testing.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		74267D9A2DDB6E9400DBD20F = {
 			isa = PBXGroup;
 			children = (
 				74267DA52DDB6E9400DBD20F /* GithubSearchApp */,
 				658D67262DDEE83D008F9557 /* GithubSearchAppTests */,
+				658D67412DDEF163008F9557 /* Frameworks */,
 				74267DA42DDB6E9400DBD20F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,6 +112,7 @@
 				658D67212DDEE83D008F9557 /* Sources */,
 				658D67222DDEE83D008F9557 /* Frameworks */,
 				658D67232DDEE83D008F9557 /* Resources */,
+				658D67452DDEF164008F9557 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

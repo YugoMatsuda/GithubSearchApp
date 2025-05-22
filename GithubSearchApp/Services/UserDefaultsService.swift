@@ -37,9 +37,15 @@ extension UserDefaultsService: DependencyKey {
     )
 }
 
-
 extension UserDefaultsService {
     enum UserDefaultsKey: String {
         case favoriteUsers
     }
+}
+
+extension UserDefaultsService: TestDependencyKey {
+    static let testValue: UserDefaultsService = Self(
+        saveFavoriteUser: { _ in },
+        getFavoriteUsers: { [] }
+    )
 }

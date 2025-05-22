@@ -22,7 +22,6 @@ struct Search {
         @CasePathable
         enum ViewAction: Equatable {
             case didTapSeachClearButton
-            
         }
         
         @CasePathable
@@ -93,8 +92,7 @@ struct Search {
             case .internal(.didReceiveSearchResult(.failure(let error))):
                 state.displayResult = .failure("Error: \(error.localizedDescription)")
                 return .none
-            case .searchBody(.favoriteList(.delegate(.didTapListRow(let user)))),
-                 .searchBody(.searchList(.delegate(.didTapListRow(let user)))):
+            case .searchBody(.delegate(.didTapListRow(let user))):
                 state.path.append(
                     user
                 )

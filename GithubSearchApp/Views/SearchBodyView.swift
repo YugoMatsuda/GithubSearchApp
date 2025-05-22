@@ -11,13 +11,15 @@ struct SearchBody {
         var favoriteList: FavoriteList.State
     }
     
+    @CasePathable
     enum Action: BindableAction {
         case binding(BindingAction<State>)
         case searchList(SearchList.Action)
         case favoriteList(FavoriteList.Action)
         case delegate(DelegateAction)
         
-        enum DelegateAction {
+        @CasePathable
+        enum DelegateAction: Equatable {
             case didTapListRow(user: User)
         }
     }

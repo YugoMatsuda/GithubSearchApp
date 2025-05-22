@@ -9,15 +9,18 @@ struct FavoriteList {
         var items: IdentifiedArrayOf<UserRow.State>
     }
     
+    @CasePathable
     enum Action: BindableAction {
         case view(ViewAction)
         case delegate(DelegateAction)
         case binding(BindingAction<State>)
         case items(IdentifiedActionOf<UserRow>)
 
+        @CasePathable
         enum ViewAction: Equatable {
         }
         
+        @CasePathable
         enum DelegateAction: Equatable {
             case didTapListRow(user: User)
         }
