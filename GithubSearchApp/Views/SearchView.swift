@@ -242,7 +242,12 @@ struct SearchView: View {
             }
             .navigationTitle("GitHub Search")
             .navigationDestination(for: User.self) { user in
-                UserProfileView(username: user.login)
+                UserProfileView(store: Store(
+                    initialState: UserProfile.State.init(
+                        userName: user.login, userProfileHeaderDisplayResult: .initial, userProfileRepositoriesDisplayResult: .initial
+                    ),
+                    reducer: { UserProfile() })
+                )
             }
         }
     }
