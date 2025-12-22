@@ -1,21 +1,152 @@
 import SwiftUI
+import ComposableArchitecture
+
+@Reducer
+struct UserProfile {
+    @ObservableState
+    struct State: Equatable {
+        let userName: String
+        var userProfileHeaderDisplayResult: UserProfileHeaderDisplayResult
+        var userProfileRepositoriesDisplayResult: UserProfileRepositoriesDisplayResult
+        
+        enum UserProfileHeaderDisplayResult: Equatable {
+            case success(UserDetail)
+            case failure(String)
+            case loading
+            case initial
+        }
+
+        enum UserProfileRepositoriesDisplayResult: Equatable {
+            case success([Repository])
+            case failure(String)
+            case loading
+            case empty
+            case initial
+        }
+    }
+    
+    @CasePathable
+    enum Action: BindableAction {
+        case view(ViewAction)
+        case binding(BindingAction<State>)
+        case `internal`(InternalAction)
+
+        @CasePathable
+        enum ViewAction {
+            case onAppear
+            case didTapRetryFetchUserDetailButton
+            case didTapRetryFetchRepositoriesButton
+        }
+        
+        @CasePathable
+        enum InternalAction {
+            case didReceiveUserDetailResult(TaskResult<UserDetail>)
+            case didReceiveRepositorieslResult(TaskResult<[Repository]>)
+        }
+    }
+    
+    @Dependency(\.networkService) var networkService
+    
+    var body: some Reducer<State, Action> {
+        BindingReducer()
+        Reduce { state, action in
+            switch action {
+            case .view(.onAppear):
+                state.userProfileHeaderDisplayResult = .loading
+                state.userProfileRepositoriesDisplayResult = .loading
+                return .merge(
+                    fetchUserDetail(state: &state),
+                    fetchRepositories(state: &state)
+                )
+            case .view(.didTapRetryFetchUserDetailButton):
+                state.userProfileHeaderDisplayResult = .loading
+                return fetchUserDetail(state: &state)
+            case .view(.didTapRetryFetchRepositoriesButton):
+                state.userProfileRepositoriesDisplayResult = .loading
+                return fetchRepositories(state: &state)
+            case .internal(.didReceiveUserDetailResult(.success(let userDetail))):
+                state.userProfileHeaderDisplayResult = .success(userDetail)
+                return .none
+            case .internal(.didReceiveUserDetailResult(.failure(let error))):
+                state.userProfileHeaderDisplayResult = .failure(getUserErrorMessage(error))
+                return .none
+            case .internal(.didReceiveRepositorieslResult(.success(let repositories))):
+                if repositories.isEmpty {
+                    state.userProfileRepositoriesDisplayResult = .empty
+                } else {
+                    state.userProfileRepositoriesDisplayResult = .success(repositories)
+                }
+                return .none
+            case .internal(.didReceiveRepositorieslResult(.failure(let error))):
+                state.userProfileRepositoriesDisplayResult = .failure(getUserErrorMessage(error))
+                return .none
+            case .internal:
+                return .none
+            case .binding:
+                return .none
+            }
+        }
+    }
+    
+    private func getUserErrorMessage(_ error: Error) -> String {
+        let userErrorMessage: String
+        if let networkError = error as? NetworkError {
+            switch networkError {
+            case .rateLimitExceeded:
+                userErrorMessage = "GitHub API rate limit exceeded. Please try again later."
+            case .httpError(let code):
+                userErrorMessage = "HTTP error: \(code)"
+            case .invalidURL:
+                userErrorMessage = "Invalid URL"
+            case .invalidResponse:
+                userErrorMessage = "Invalid response from server"
+            case .decodingError:
+                userErrorMessage = "Error decoding data"
+            case .noData:
+                userErrorMessage = "No data received"
+            }
+        } else {
+            userErrorMessage = "Unknown error: \(error.localizedDescription)"
+        }
+        return userErrorMessage
+    }
+    
+    
+    private func fetchUserDetail(state: inout State) -> Effect<Action> {
+        return  .run { [username = state.userName] send in
+            await send(
+                .internal(
+                    .didReceiveUserDetailResult(
+                        TaskResult { try await networkService.getUserDetails(username)  }
+                    )
+                ),
+                animation: .default
+            )
+        }
+    }
+    
+    private func fetchRepositories(state: inout State) -> Effect<Action> {
+        .run { [username = state.userName] send in
+            await send(
+                .internal(
+                    .didReceiveRepositorieslResult(
+                        TaskResult { try await networkService.getUserRepositories(username)  }
+                    )
+                ),
+                animation: .default
+            )
+        }
+    }
+}
 
 struct UserProfileView: View {
-    let username: String
-    @StateObject private var viewModel = UserProfileViewModel()
-    
+    @Bindable var store: StoreOf<UserProfile>
+
     var body: some View {
         ScrollView {
             VStack(alignment: .center, spacing: 16) {
-                // Profile Header
-                if viewModel.isLoadingUser {
-                    ProgressView("Loading profile...")
-                        .padding()
-                } else if let errorMessage = viewModel.userErrorMessage {
-                    ErrorView(message: errorMessage) {
-                        viewModel.loadUserProfile(username: username)
-                    }
-                } else if let userDetail = viewModel.userDetail {
+                switch store.userProfileHeaderDisplayResult {
+                case .success(let userDetail):
                     AsyncImage(url: URL(string: userDetail.avatarUrl)) { phase in
                         switch phase {
                         case .empty:
@@ -72,6 +203,15 @@ struct UserProfileView: View {
                     .padding()
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(10)
+                case .failure(let errorMessage):
+                    ErrorView(message: errorMessage) {
+                        store.send(.view(.didTapRetryFetchUserDetailButton), animation: .default)
+                    }
+                case .loading:
+                    ProgressView("Loading profile...")
+                        .padding()
+                case .initial:
+                    EmptyView()
                 }
                 
                 // Repositories Section
@@ -81,15 +221,14 @@ struct UserProfileView: View {
                         .fontWeight(.bold)
                         .padding(.horizontal)
                         .padding(.top)
-                    
-                    if viewModel.isLoadingRepos {
-                        HStack {
-                            Spacer()
-                            ProgressView("Loading repositories...")
-                            Spacer()
+                    switch store.userProfileRepositoriesDisplayResult {
+                    case .success(let repositories):
+                        ForEach(repositories) { repo in
+                            RepositoryRow(repository: repo)
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
                         }
-                        .padding()
-                    } else if let errorMessage = viewModel.reposErrorMessage {
+                    case .failure(let errorMessage):
                         VStack {
                             Text(errorMessage)
                                 .foregroundColor(.red)
@@ -97,33 +236,35 @@ struct UserProfileView: View {
                                 .padding()
                             
                             Button("Retry") {
-                                viewModel.loadUserRepositories(username: username)
+                                store.send(.view(.didTapRetryFetchRepositoriesButton), animation: .default)
+
                             }
                             .buttonStyle(.bordered)
                         }
                         .padding()
-                    } else if viewModel.repositories.isEmpty {
+                    case .loading:
+                        HStack {
+                            Spacer()
+                            ProgressView("Loading repositories...")
+                            Spacer()
+                        }
+                        .padding()
+                    case .empty:
                         Text("No repositories found")
                             .foregroundColor(.secondary)
                             .padding()
-                    } else {
-                        ForEach(viewModel.repositories) { repo in
-                            RepositoryRow(repository: repo)
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                        }
+                    case .initial:
+                        EmptyView()
                     }
                 }
+                .padding()
             }
-            .padding()
-        }
-        .navigationTitle("Profile")
-        .onAppear {
-            viewModel.loadUserProfile(username: username)
-            viewModel.loadUserRepositories(username: username)
+            .navigationTitle("Profile")
+            .onAppear {
+                store.send(.view(.onAppear), animation: .default)
+            }
         }
     }
-    
 }
 
 struct StatView: View {

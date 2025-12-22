@@ -24,6 +24,22 @@ struct User: Identifiable, Codable, Equatable, Hashable {
     }
 }
 
+extension User {
+    static func mock(
+        id: Int = 0,
+        login: String = "login",
+        avatarUrl: String = "avatarUrl",
+        htmlUrl: String = "htmlUrl"
+    ) -> User {
+        User(
+            id: id,
+            login: login,
+            avatarUrl: avatarUrl,
+            htmlUrl: htmlUrl
+        )
+    }
+}
+
 struct UserDetail: Codable, Equatable {
     let id: Int
     let login: String
@@ -43,5 +59,29 @@ struct UserDetail: Codable, Equatable {
         case publicRepos = "public_repos"
         case followers
         case following
+    }
+}
+
+extension UserDetail {
+    static func mock(
+        id: Int = 0,
+        login: String = "login",
+        avatarUrl: String = "avatarUrl",
+        name: String? = "name",
+        bio: String? = "bio",
+        publicRepos: Int = 0,
+        followers: Int = 0,
+        following: Int = 0
+    ) -> UserDetail {
+        UserDetail(
+            id: id,
+            login: login,
+            avatarUrl: avatarUrl,
+            name: name,
+            bio: bio,
+            publicRepos: publicRepos,
+            followers: followers,
+            following: following
+        )
     }
 }

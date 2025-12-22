@@ -1,13 +1,60 @@
 import SwiftUI
+import ComposableArchitecture
 
-struct UserRow: View {
-    let userRowUIModel: UserRowUIModel
+@Reducer
+struct UserRow {
+    @ObservableState
+    struct State: Equatable, Identifiable {
+        var id: Int {
+            user.id
+        }
+        var user: User
+        var isFavorite: Bool
+            
+    }
+    
+    enum Action: BindableAction {
+        case view(ViewAction)
+        case delegate(DelegateAction)
+        case binding(BindingAction<State>)
+
+        enum ViewAction {
+            case didTap
+            case didTapFavorite
+        }
+        
+        enum DelegateAction {
+            case didTapRow(id: Int)
+            case didTapFavoriteButton(id: Int)
+        }
+        
+    }
+    var body: some Reducer<State, Action> {
+        BindingReducer()
+        Reduce { state, action in
+            switch action {
+            case .view(.didTap):
+                return .send(.delegate(.didTapRow(id: state.user.id)))
+            case .view(.didTapFavorite):
+                return .send(.delegate(.didTapFavoriteButton(id: state.user.id)))
+            case .delegate:
+                return .none
+            case .binding:
+                return .none
+            }
+        }
+    }
+}
+
+
+struct UserRowView: View {
+    @Bindable var store: StoreOf<UserRow>
 
     var body: some View {
         HStack {
             HStack(spacing: 12) {
                 // Avatar image
-                AsyncImage(url: URL(string: userRowUIModel.avatarUrl)) { phase in
+                AsyncImage(url: URL(string: store.user.avatarUrl)) { phase in
                     switch phase {
                     case .empty:
                         Circle()
@@ -23,7 +70,7 @@ struct UserRow: View {
                             .frame(width: 50, height: 50)
                             .clipShape(Circle())
                     case .failure(_):
-                        Image(systemName: "user")
+                        Image(systemName: "person.circle")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 50, height: 50)
@@ -40,10 +87,10 @@ struct UserRow: View {
                 
                 // User info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(userRowUIModel.login)
+                    Text(store.user.login)
                         .font(.headline)
                     
-                    Text(userRowUIModel.htmlUrl)
+                    Text(store.user.htmlUrl)
                         .font(.caption)
                         .foregroundColor(.blue)
                 }
@@ -53,34 +100,19 @@ struct UserRow: View {
             .padding(.vertical, 8)
             .contentShape(Rectangle())
             .onTapGesture {
-                userRowUIModel.didTapRow()
+                store.send(.view(.didTap))
             }
             
             
             Button(action: {
-                userRowUIModel.didTapFavoriteButton(userRowUIModel.id)
+                store.send(.view(.didTapFavorite), animation: .default)
             }) {
-                Image(systemName: userRowUIModel.isFavorite ? "star.fill" : "star")
-                    .foregroundColor(userRowUIModel.isFavorite ? .yellow : .gray)
+                Image(systemName: store.isFavorite ? "star.fill" : "star")
+                    .foregroundColor(store.isFavorite ? .yellow : .gray)
                     .font(.title2)
                     .contentShape(Rectangle())
             }
             .frame(width: 50, height: 50)
         }
-    }
-}
-
-extension UserRow {
-    struct UserRowUIModel: Identifiable, Equatable {
-        var id: Int
-        var login: String
-        var htmlUrl: String
-        var avatarUrl: String
-        var isFavorite: Bool
-        
-        @EquatableNoop
-        var didTapFavoriteButton: (Int) -> Void
-        @EquatableNoop
-        var didTapRow: () -> Void
     }
 }
