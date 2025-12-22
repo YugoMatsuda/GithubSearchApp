@@ -3,7 +3,6 @@ import SwiftUI
 struct UserProfileView: View {
     let username: String
     @StateObject private var viewModel = UserProfileViewModel()
-    @State private var avatarImage: UIImage?
     
     var body: some View {
         ScrollView {
@@ -17,17 +16,31 @@ struct UserProfileView: View {
                         viewModel.loadUserProfile(username: username)
                     }
                 } else if let userDetail = viewModel.userDetail {
-                    if let avatarImage = avatarImage {
-                        Image(uiImage: avatarImage)
-                            .resizable()
-                            .frame(width: 200, height: 200)
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    } else {
-                        Circle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 200, height: 200)
-                            .overlay(ProgressView())
+                    AsyncImage(url: URL(string: userDetail.avatarUrl)) { phase in
+                        switch phase {
+                        case .empty:
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 200, height: 200)
+                                .overlay(ProgressView())
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .frame(width: 200, height: 200)
+                                .clipShape(Circle())
+                                .shadow(radius: 5)
+                        case .failure(_):
+                            Image(systemName: "user")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 50, height: 50)
+                                .clipShape(Circle())
+                        @unknown default:
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 200, height: 200)
+                                .overlay(ProgressView())
+                        }
                     }
                     
                     VStack(spacing: 8) {
@@ -108,27 +121,9 @@ struct UserProfileView: View {
         .onAppear {
             viewModel.loadUserProfile(username: username)
             viewModel.loadUserRepositories(username: username)
-            loadAvatar()
         }
     }
     
-    private func loadAvatar() {
-        guard let userDetail = viewModel.userDetail,
-              let url = URL(string: userDetail.avatarUrl) else { return }
-        
-        Task {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                if let image = UIImage(data: data) {
-                    await MainActor.run {
-                        self.avatarImage = image
-                    }
-                }
-            } catch {
-                print("Failed to load avatar: \(error)")
-            }
-        }
-    }
 }
 
 struct StatView: View {

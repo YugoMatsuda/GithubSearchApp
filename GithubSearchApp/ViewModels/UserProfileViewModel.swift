@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import class UIKit.UIImage
 
 class UserProfileViewModel: ObservableObject {
     @Published var userDetail: UserDetail?
@@ -8,13 +9,12 @@ class UserProfileViewModel: ObservableObject {
     @Published var isLoadingRepos = false
     @Published var userErrorMessage: String?
     @Published var reposErrorMessage: String?
-    
+
     private let networkService = NetworkService()
     
     func loadUserProfile(username: String) {
         isLoadingUser = true
         userErrorMessage = nil
-        
         Task {
             do {
                 let details = try await networkService.getUserDetails(username: username)
@@ -29,6 +29,7 @@ class UserProfileViewModel: ObservableObject {
                 }
             }
         }
+
     }
     
     func loadUserRepositories(username: String) {
